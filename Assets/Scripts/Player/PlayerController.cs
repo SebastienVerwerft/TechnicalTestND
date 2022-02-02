@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _movingSpeed;
     [SerializeField] private float _sideStepSpeed;
 
+    private float _timeElapsed;
     private Vector3 _moveDirection;
 
     void Start()
@@ -22,14 +23,29 @@ public class PlayerController : MonoBehaviour
             // Get the first input only
             Touch touch = Input.GetTouch(0);
 
-            // if we touch on left side or right side, modify the direction
-            if(touch.position.x < Screen.width/2)
+            if(touch.phase == TouchPhase.Began)
             {
-                _moveDirection = new Vector3(-_sideStepSpeed, 0, 1);
+                _timeElapsed = 0f;
             }
-            else
+
+            if(touch.phase == TouchPhase.Stationary)
             {
-                _moveDirection = new Vector3(_sideStepSpeed, 0, 1);
+                // Adding a little smooth start on side moves
+                float t = _timeElapsed / _sideStepSpeed;
+                float value = Mathf.Lerp(0, 1, t * t * t);
+
+                // if we touch on left side or right side, modify the direction
+                if (touch.position.x < Screen.width/2)
+                {
+                    _moveDirection = new Vector3(-value, 0, 1);
+                }
+                else
+                {
+                    _moveDirection = new Vector3(value, 0, 1);
+                }
+
+                // Add the time to respect the curve
+                _timeElapsed += Time.deltaTime;
             }
         }
 
